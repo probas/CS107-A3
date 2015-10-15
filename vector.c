@@ -52,7 +52,7 @@ void VectorReplace(vector *v, const void *elemAddr, int position) {
 
     assert(position >=0 && position <= v->logSize - 1);
     targetAddress = (char *)v->elements + position * v->elementSize;
-    v->freefn(targetAddress); //applying freefn to element before it is replaced
+    // v->freefn(targetAddress); //applying freefn to element before it is replaced
     memcpy(targetAddress, elemAddr, v->elementSize);
 }
 
