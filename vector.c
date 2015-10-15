@@ -37,8 +37,15 @@ int VectorLength(const vector *v) {
     return v->logSize;
 }
 
-void *VectorNth(const vector *v, int position)
-{ return NULL; }
+void *VectorNth(const vector *v, int position) {
+    void *targetAddress;
+    int maxIndex = v->logSize - 1;
+    
+    assert(position >= 0 && position <= maxIndex);
+    targetAddress = (char*)v->elements + position * v->elementSize;  //works without cast to (char *)?
+    
+    return targetAddress;
+}
 
 void VectorReplace(vector *v, const void *elemAddr, int position)
 {}
