@@ -24,10 +24,10 @@ void VectorNew(vector *v, int elemSize, VectorFreeFunction freefn, int initialAl
 
 void VectorDispose(vector *v) {
     if( v->freefn != NULL ) {
-        void *addr = (char*)v->elements + i * v->elementSize;
+        void *addr = (char*)v->elements;
         for (int i = 0; i < v->logSize; i++) {
             v->freefn(addr);
-            adddr += v->elemSize;
+            addr += v->elementSize;
         }
     }
 }
@@ -126,6 +126,6 @@ int VectorSearch(const vector *v, const void *key, VectorCompareFunction searchF
     if( result != NULL ) {
         return (int)((char *)result - (char*)v->elements) / v->elementSize;
     }
-    
+
     return kNotFound;
 }
