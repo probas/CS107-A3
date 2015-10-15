@@ -3,9 +3,24 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+#include <search.h>
 
-void VectorNew(vector *v, int elemSize, VectorFreeFunction freeFn, int initialAllocation)
-{}
+#define kInitialAllocationSize 10
+
+static const int kNotFound = -1;
+
+void VectorNew(vector *v, int elemSize, VectorFreeFunction freefn, int initialAllocation) {
+    assert ( initialAllocation >= 0 );
+    if ( initialAllocation == 0 ) {
+        initialAllocation = kInitialAllocationSize;
+    }
+    v->elements = malloc(initialAllocation * elemSize);
+    assert ( v->elements != NULL );
+    v->freefn = freefn;
+    v->elementSize = elemSize;
+    v->size = initialAllocation;
+    v->logSize = 0;
+}
 
 void VectorDispose(vector *v)
 {}
