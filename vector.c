@@ -56,8 +56,25 @@ void VectorReplace(vector *v, const void *elemAddr, int position) {
     memcpy(targetAddress, elemAddr, v->elementSize);
 }
 
-void VectorInsert(vector *v, const void *elemAddr, int position)
-{}
+void VectorInsert(vector *v, const void *elemAddr, int position) {
+    void *targetAddress;
+    void *sourceAddress;
+    int offset = v->logSize - position;
+
+    assert(position >=0 && position <= v->logSize);
+
+    if (v->logSize == v->size) {
+        v->size *= 2;
+        v->elements = realloc(v->elements, v->size * v->elementSize);
+        assert(v->elements != NULL);
+    }
+    
+    targetAddress = (char *)v->elements + (position + 1) * v->elementSize;
+    sourceAddress = (char *)v->elements + position * v->elementSize;
+    memmove(targetAddress, sourceAddress, offset * v->elementSize);
+    memcpy(sourceAddress, elemAddr, v->elementSize);//may need to redefine copy function depending on user data
+    v->logSize += 1;
+}
 
 void VectorAppend(vector *v, const void *elemAddr)
 {}
