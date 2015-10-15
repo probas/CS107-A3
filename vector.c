@@ -93,8 +93,10 @@ void VectorDelete(vector *v, int position) {
     v->logSize -= 1;
 }
 
-void VectorSort(vector *v, VectorCompareFunction compare)
-{}
+void VectorSort(vector *v, VectorCompareFunction compare) {
+    assert(compare != NULL);
+    qsort(v->elements, v->logSize, v->elementSize, compare);
+}
 
 void VectorMap(vector *v, VectorMapFunction mapFn, void *auxData)
 {}
