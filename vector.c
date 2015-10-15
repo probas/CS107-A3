@@ -80,8 +80,18 @@ void VectorAppend(vector  *v, const void *elemAddr) {
     VectorInsert(v, elemAddr, v->logSize);
 }
 
-void VectorDelete(vector *v, int position)
-{}
+void VectorDelete(vector *v, int position) {
+    int offset;
+    void *targetAddress;
+    void *sourceAddress;
+
+    assert(position >= 0 && position <= v->logSize - 1);
+    offset = v->logSize - position;
+    targetAddress = (char *)v->elements + position * v->elementSize;
+    sourceAddress = (char *)v->elements + (position + 1) * v->elementSize;
+    memmove(targetAddress, sourceAddress, offset * v->elementSize);
+    v->logSize -= 1;
+}
 
 void VectorSort(vector *v, VectorCompareFunction compare)
 {}
