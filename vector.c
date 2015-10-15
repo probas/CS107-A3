@@ -43,7 +43,7 @@ void *VectorNth(const vector *v, int position) {
     
     assert(position >= 0 && position <= maxIndex);
     targetAddress = (char*)v->elements + position * v->elementSize;  //works without cast to (char *)?
-    
+
     return targetAddress;
 }
 
@@ -108,6 +108,24 @@ void VectorMap(vector *v, VectorMapFunction mapFn, void *auxData) {
     }
 }
 
-static const int kNotFound = -1;
-int VectorSearch(const vector *v, const void *key, VectorCompareFunction searchFn, int startIndex, bool isSorted)
-{ return -1; } 
+int VectorSearch(const vector *v, const void *key, VectorCompareFunction searchFn, int startIndex, bool isSorted) {
+    void *startAddress;
+    void *result;
+    
+    assert(key != NULL);
+    assert(searchFn != NULL);
+    assert(startIndex >= 0 && startIndex <= v->logSize);
+
+    startAddress = (char *)v->elements + startIndex * v->elementSize;
+    if ( isSorted ) {
+        result = bsearch(key, startAddress, v->logSize, v->elementSize, searchFn);
+    } else {
+        size_t s = v->logSize - startIndex;
+        result = lfind(key, startAddress, &s, v->elementSize, searchFn);
+    }
+    if( result != NULL ) {
+        return (int)((char *)result - (char*)v->elements) / v->elementSize;
+    }
+    
+    return kNotFound;
+}
