@@ -76,8 +76,9 @@ void VectorInsert(vector *v, const void *elemAddr, int position) {
     v->logSize += 1;
 }
 
-void VectorAppend(vector *v, const void *elemAddr)
-{}
+void VectorAppend(vector  *v, const void *elemAddr) {
+    VectorInsert(v, elemAddr, v->logSize);
+}
 
 void VectorDelete(vector *v, int position)
 {}
