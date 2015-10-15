@@ -72,6 +72,7 @@ typedef struct {
     int elementSize;
     int size;
     int logSize;
+    VectorFreeFunction freefn;
 } vector;
 
 /** 
