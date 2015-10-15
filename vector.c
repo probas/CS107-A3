@@ -22,11 +22,20 @@ void VectorNew(vector *v, int elemSize, VectorFreeFunction freefn, int initialAl
     v->logSize = 0;
 }
 
-void VectorDispose(vector *v)
-{}
+void VectorDispose(vector *v) {
+    if( v->freefn != NULL ) {
+        void *addr = (char*)v->elements + i * v->elementSize;
+        for (int i = 0; i < v->logSize; i++) {
+            v->freefn(addr);
+            adddr += v->elemSize;
+        }
+    }
+}
 
-int VectorLength(const vector *v)
-{ return 0; }
+int VectorLength(const vector *v) {
+    assert(v != NULL);
+    return v->logSize;
+}
 
 void *VectorNth(const vector *v, int position)
 { return NULL; }
