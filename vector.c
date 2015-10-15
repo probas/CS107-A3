@@ -47,8 +47,14 @@ void *VectorNth(const vector *v, int position) {
     return targetAddress;
 }
 
-void VectorReplace(vector *v, const void *elemAddr, int position)
-{}
+void VectorReplace(vector *v, const void *elemAddr, int position) {
+    void *targetAddress;
+
+    assert(position >=0 && position <= v->logSize - 1);
+    targetAddress = (char *)v->elements + position * v->elementSize;
+    v->freefn(targetAddress); //applying freefn to element before it is replaced
+    memcpy(targetAddress, elemAddr, v->elementSize);
+}
 
 void VectorInsert(vector *v, const void *elemAddr, int position)
 {}
