@@ -98,8 +98,15 @@ void VectorSort(vector *v, VectorCompareFunction compare) {
     qsort(v->elements, v->logSize, v->elementSize, compare);
 }
 
-void VectorMap(vector *v, VectorMapFunction mapFn, void *auxData)
-{}
+void VectorMap(vector *v, VectorMapFunction mapFn, void *auxData) {
+    void *elemAddr;
+    
+    assert(mapFn != NULL);
+    for (int i = 0; i < v->logSize; i++) {
+        elemAddr = (char *)v->elements + i * v->elementSize;
+        mapFn(elemAddr, auxData);
+    }
+}
 
 static const int kNotFound = -1;
 int VectorSearch(const vector *v, const void *key, VectorCompareFunction searchFn, int startIndex, bool isSorted)
