@@ -2,6 +2,32 @@
 #define _hashset_
 #include "vector.h"
 
+/*
+typedef int (*HashSetHashFunction)(const void *elemAddr, int numBuckets);
+
+typedef int (*HashSetCompareFunction)(const void *elemAddr1,  const void *elemAddr);
+
+typedef void (*HashSetMapFunction)(void *elemAddr, void *auxData);
+
+typedef void (*HashSetFreeFunction)(void *elemAddr);
+
+typedef struct {} hashset;
+
+void HashSetNew(hashset *h, int elemSize, int numBuckets,
+ HashSetHashFunction hashfn, HashSetCompareFunction comparefn,
+ HashSetFreeFunction freefn);
+
+void HashSetDispose(hashset *h);
+
+int HashSetCount(const hashset *h);
+
+void HashSetEnter(hashset *h, const void *elemAddr);
+
+void *HashSetLookup(const hashset *h, const void *elemAddr);
+
+void HashSetMap(hashset *h, HashSetMapFunction mapfn, void *auxData);
+*/
+
 /* File: hashtable.h
  * ------------------
  * Defines the interface for the hashset.
@@ -26,7 +52,7 @@ typedef int (*HashSetHashFunction)(const void *elemAddr, int numBuckets);
  * ----------------------------
  * Class of function designed to compare two elements, each identified
  * by address.  The HashSetCompareFunction compares these elements and
- * decides whether or not they are logically equal or or.  The
+ * decides whether or not they are logically equal or not. The
  * return value identifies relative ordering:
  * 
  *   - A negative return value means that the item addressed by elemAddr1
@@ -73,7 +99,15 @@ typedef void (*HashSetFreeFunction)(void *elemAddr);
  */
 
 typedef struct {
-  // to be filled in by you
+    int elemSize;
+    int numBuckets;
+    int numElements;
+    
+    vector *buckets;
+
+    HashSetHashFunction hashfn;
+    HashSetCompareFunction comparefn;
+    HashSetFreeFunction freefn;
 } hashset;
 
 /**
@@ -149,9 +183,9 @@ int HashSetCount(const hashset *h);
  * Function: HashSetEnter
  * ----------------------
  * Inserts the specified element into the specified
- * hashset.  If the specified element matches an
+ * hashset. If the specified element matches an
  * element previously inserted (as far as the hash
- * and compare functions are concerned), the the
+ * and compare functions are concerned), then the
  * old element is replaced by this new element.
  *
  * An assert is raised if the specified address is NULL, or
