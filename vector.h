@@ -31,7 +31,6 @@
  *   If elemAddr1 is greater than elemAddr2, return a positive number.
  *   If the two elements are equal, return 0.
  */
-
 typedef int (*VectorCompareFunction)(const void *elemAddr1, const void *elemAddr2);
 
 /** 
@@ -42,7 +41,6 @@ typedef int (*VectorCompareFunction)(const void *elemAddr1, const void *elemAddr
  * the element and a client data pointer passed in from the original
  * caller.
  */
-
 typedef void (*VectorMapFunction)(void *elemAddr, void *auxData);
 
 /** 
@@ -53,20 +51,16 @@ typedef void (*VectorMapFunction)(void *elemAddr, void *auxData);
  * or when the entire vector is destroyed.  The cleanup function is 
  * called with a pointer to an element about to be deleted.
  */
-
 typedef void (*VectorFreeFunction)(void *elemAddr);
 
 /**
  * Type: vector
  * ------------
- * Defines the concrete representation of
- * the vector.  Even though everything is
- * exposed, the client should respect the 
- * the privacy of the representation and initialize,
- * dispose of, and otherwise interact with a
- * vector using those functions defined in this file.
+ * Defines the concrete representation of the vector. Even though everything is
+ * exposed, the client should respect the the privacy of the representation and
+ * initialize, dispose of, and otherwise interact with a vector using those
+ * functions defined in this file.
  */
-
 typedef struct {
     void *elements;
     int elementSize;
@@ -75,7 +69,7 @@ typedef struct {
     VectorFreeFunction freefn;
 } vector;
 
-/** 
+/**
  * Function: VectorNew
  * Usage: vector myFriends;
  *        VectorNew(&myFriends, sizeof(char *), StringFree, 10);
@@ -84,13 +78,13 @@ typedef struct {
  * empty vector.
  * 
  * The elemSize parameter specifies the number of bytes that a single 
- * element of the vector should take up.  For example, if you want to store 
+ * element of the vector should take up. For example, if you want to store 
  * elements of type char *, you would pass sizeof(char *) as this parameter.
  * An assert is raised if the size is not greater than zero.
  *
  * The ArrayFreeFunction is the function that will be called on an element that
  * is about to be deleted (using VectorDelete) or on each element in the
- * vector when the entire vector is being freed (using VectorDispose).  This function
+ * vector when the entire vector is being freed (using VectorDispose). This function
  * is your chance to do any deallocation/cleanup required for the element
  * (such as freeing/deleting any pointers contained in the element). The client can pass 
  * NULL for the ArrayFreeFunction if the elements don't require any special handling.
@@ -124,7 +118,6 @@ typedef struct {
  * will use the default value of its own choosing.  As assert is raised is 
  * the initialAllocation value is less than 0.
  */
-
 void VectorNew(vector *v, int elemSize, VectorFreeFunction freefn, int initialAllocation);
 
 /**
@@ -137,18 +130,16 @@ void VectorNew(vector *v, int elemSize, VectorFreeFunction freefn, int initialAl
  * vector does not have.  However, it *will* iterate over the elements calling
  * the VectorFreeFunction previously supplied to VectorNew.
  */
-
 void VectorDispose(vector *v);
 
 /**
  * Function: VectorLength
  * ----------------------
  * Returns the logical length of the vector, i.e. the number of elements
- * currently in the vector.  Must run in constant time.
+ * currently in the vector. Must run in constant time.
  */
-
 int VectorLength(const vector *v);
-	   
+
 /**
  * Method: VectorNth
  * -----------------

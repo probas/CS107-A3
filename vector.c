@@ -1,8 +1,8 @@
 #include "vector.h"
-#include <stdio.h>
+#include <stdio.h> 
 #include <stdlib.h>
 #include <string.h>
-#include <assert.h>
+#include <assert.h> // assert
 #include <search.h>
 
 #define kInitialAllocationSize 10
@@ -10,11 +10,13 @@
 static const int kNotFound = -1;
 
 void VectorNew(vector *v, int elemSize, VectorFreeFunction freefn, int initialAllocation) {
+    assert ( elemSize > 0 );
     assert ( initialAllocation >= 0 );
     if ( initialAllocation == 0 ) {
         initialAllocation = kInitialAllocationSize;
     }
-    v->elements = malloc(initialAllocation * elemSize);
+    // Use calloc instead of malloc to initialize the memory to 0
+    v->elements = calloc(initialAllocation, elemSize);
     assert ( v->elements != NULL );
     v->freefn = freefn;
     v->elementSize = elemSize;
@@ -24,25 +26,29 @@ void VectorNew(vector *v, int elemSize, VectorFreeFunction freefn, int initialAl
 
 void VectorDispose(vector *v) {
     if( v->freefn != NULL ) {
-        void *addr = (char*)v->elements;
+        void *addr = v->elements;
         for (int i = 0; i < v->logSize; i++) {
             v->freefn(addr);
-            addr += v->elementSize;
+            // The type cast to "char*" is required to allow arithmetic 
+            // alternatively "addr" should be of "char*" type
+            // https://groups.google.com/forum/#!topic/comp.lang.c/RRsX0Z3MUjY%5B1-25%5D
+            // A pointer cast results in a pointer value, not a pointer object.          
+            addr = (char*)addr + v->elementSize;
         }
     }
 }
 
 int VectorLength(const vector *v) {
-    assert(v != NULL);
+    // assert(v != NULL); 
     return v->logSize;
 }
 
 void *VectorNth(const vector *v, int position) {
     void *targetAddress;
     int maxIndex = v->logSize - 1;
-    
+
     assert(position >= 0 && position <= maxIndex);
-    targetAddress = (char*)v->elements + position * v->elementSize;  //works without cast to (char *)?
+    targetAddress = (char*)v->elements + position * v->elementSize;
 
     return targetAddress;
 }
@@ -66,13 +72,16 @@ void VectorInsert(vector *v, const void *elemAddr, int position) {
     if (v->logSize == v->size) {
         v->size *= 2;
         v->elements = realloc(v->elements, v->size * v->elementSize);
+        // TODO?: initialize empty vector cells with 0 
+        // void * memset ( void * ptr, int value, size_t num );
         assert(v->elements != NULL);
     }
     
     targetAddress = (char *)v->elements + (position + 1) * v->elementSize;
     sourceAddress = (char *)v->elements + position * v->elementSize;
     memmove(targetAddress, sourceAddress, offset * v->elementSize);
-    memcpy(sourceAddress, elemAddr, v->elementSize);//may need to redefine copy function depending on user data
+    //may need to redefine copy function depending on user data
+    memcpy(sourceAddress, elemAddr, v->elementSize);
     v->logSize += 1;
 }
 
