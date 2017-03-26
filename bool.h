@@ -11,8 +11,6 @@
  * true is equated with 1.
  */
 
-typedef enum {
-  false, true
-} bool;
+typedef enum {false, true} bool;
 
 #endif
