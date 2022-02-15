@@ -83,14 +83,18 @@ void VectorInsert(vector *v, const void *elemAddr, int position)
     }
 
     // re-alloc if needed
-    if (v->sz + 1 == v->maxSz) {
+    if (v->sz == v->maxSz) {
         VectorExpand(v, 0);
     }
 
-    // make room for an element to be inserted
-    void* pDst = v->data + v->elemSz*(position + 1);
-    void* pIns = v->data + v->elemSz*(position);
-    memmove(pDst, pIns, v->sz - position);
+    void* pIns = v->data + v->elemSz * position;
+    int size = v->sz - position;
+    assert(size >= 0);
+
+    if (size > 0) {
+        void* pDst = v->data + v->elemSz*(position + 1);
+        memmove(pDst, pIns, size);
+    }
 
     memcpy(pIns, elemAddr, v->elemSz);
 
@@ -101,35 +105,57 @@ void VectorAppend(vector *v, const void *elemAddr)
 {
     VALIDATE(v);
 
-    if (v->sz == v->maxSz) {
-        VectorExpand(v, 0);
-    }
-    memmove((void*)(v->data + v->sz * v->elemSz), elemAddr, v->elemSz);
-    v->sz += 1;
+    VectorInsert(v, elemAddr, v->sz);
 }
 
 void VectorReplace(vector *v, const void *elemAddr, int position)
 {
-    // TODO: implement
+    VALIDATE(v);
+    assert(position >= 0 && position < v->sz);
+
+    void* pRep = v->data + v->elemSz * position;
+    v->freeFn(pRep);
+    memcpy(pRep, elemAddr, v->elemSz);
 }
 
 void VectorDelete(vector *v, int position)
 {
-    // TODO: implement
-    v->data = NULL;
-    v->sz = 0;
-    v->maxSz = 0;
-    v->elemSz = 0;
+    VALIDATE(v);
+    assert(position >= 0 && position < v->sz);
+
+    void* pDel = v->data + v->elemSz * position;
+    void* pSrc = v->data + v->elemSz * (position + 1);
+    int size = v->sz - position - 1;
+    assert(size >= 0);
+
+    v->freeFn(pDel);
+    if (size > 0) {
+        memmove(pDel, pSrc, size);
+    }
+
+    v->sz -= 1;
 }
 
+// typedef int (*VectorCompareFunction)(const void *elemAddr1, const void *elemAddr2);
 void VectorSort(vector *v, VectorCompareFunction compare)
 {
-    // TODO: implement
+    VALIDATE(v);
+    assert(compare);
+
+    // WARNING: This invalidates any vectorN calls
+    qsort((void*)v->data, v->sz, v->elemSz, compare);
 }
 
 void VectorMap(vector *v, VectorMapFunction mapFn, void *auxData)
 {
-    // TODO: implement
+    VALIDATE(v);
+    assert(mapFn);
+    void* pElem = NULL;
+
+    for (int i = 0; i < v->sz; i++) {
+        pElem = v->data + i * v->elemSz;
+        mapFn(pElem, auxData);
+    }
 }
 
 static const int kNotFound = -1;
