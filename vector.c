@@ -136,13 +136,12 @@ void VectorDelete(vector *v, int position)
     v->sz -= 1;
 }
 
-// typedef int (*VectorCompareFunction)(const void *elemAddr1, const void *elemAddr2);
 void VectorSort(vector *v, VectorCompareFunction compare)
 {
     VALIDATE(v);
     assert(compare);
 
-    // WARNING: This invalidates any vectorN calls
+    // WARNING: This invalidates all previous vectorN calls
     qsort((void*)v->data, v->sz, v->elemSz, compare);
 }
 
@@ -161,5 +160,34 @@ void VectorMap(vector *v, VectorMapFunction mapFn, void *auxData)
 static const int kNotFound = -1;
 int VectorSearch(const vector *v, const void *key, VectorCompareFunction searchFn, int startIndex, bool isSorted)
 {
-    return -1;
+    VALIDATE(v);
+    assert(key);
+    assert(searchFn);
+    assert(startIndex >= 0 && startIndex < v->sz);
+
+    int pos = kNotFound;
+    void* pStart = v->data + v->elemSz * startIndex;
+    void* pElem = NULL;
+
+    if (isSorted) {
+        pElem = bsearch(key, pStart, v->sz, v->elemSz, searchFn);
+        if (pElem) {
+            if((((uint8_t*)pElem - (uint8_t*)v->data) % v->elemSz) == 0) {
+                pos = ((uint8_t*)pElem - (uint8_t*)v->data) / v->elemSz;
+            }
+            if (pos < startIndex || pos >= v->sz) {
+                pos = kNotFound;
+            }
+        }
+    } else {
+        // alternatively, use lfind()
+        for (int i = startIndex; i < v->sz; i++) {
+            pElem = v->data + v->elemSz * startIndex;
+            if (0 == searchFn(key, pElem)) {
+                return i;
+            }
+        }
+    }
+
+    return pos;
 }
