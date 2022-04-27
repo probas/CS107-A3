@@ -37,13 +37,13 @@ void VectorNew(vector *v, int elemSize, VectorFreeFunction freeFn, int initialAl
 void VectorDispose(vector *v)
 {
     VALIDATE(v);
-
     assert(v->data);
-    assert(v->freeFn);
 
-    for(int i = 0; i < v->sz; i++) {
-        // NOTE: It is a responsibility of freeFn to cast from void* to elem*
-        v->freeFn((int*)(v->data + i * v->elemSz));
+    if (v->freeFn && v->data) {
+        for(int i = 0; i < v->sz; i++) {
+            // NOTE: It is a responsibility of freeFn to cast from void* to elem*
+            v->freeFn((uint8_t*)(v->data + i * v->elemSz));
+        }
     }
 
     free(v->data);
@@ -77,11 +77,6 @@ void VectorInsert(vector *v, const void *elemAddr, int position)
     assert(position >= 0 && position <= v->sz); // allow insert to the end <==> append
     assert(elemAddr);
 
-    if (position == v->sz) {
-        VectorAppend(v, elemAddr);
-        return;
-    }
-
     // re-alloc if needed
     if (v->sz == v->maxSz) {
         VectorExpand(v, 0);
@@ -114,7 +109,9 @@ void VectorReplace(vector *v, const void *elemAddr, int position)
     assert(position >= 0 && position < v->sz);
 
     void* pRep = v->data + v->elemSz * position;
-    v->freeFn(pRep);
+    if (v->freeFn) {
+        v->freeFn(pRep);
+    }
     memcpy(pRep, elemAddr, v->elemSz);
 }
 
@@ -128,7 +125,9 @@ void VectorDelete(vector *v, int position)
     int size = v->sz - position - 1;
     assert(size >= 0);
 
-    v->freeFn(pDel);
+    if (v->freeFn) {
+        v->freeFn(pDel);
+    }
     if (size > 0) {
         memmove(pDel, pSrc, size);
     }
