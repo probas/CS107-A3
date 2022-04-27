@@ -10,10 +10,10 @@
 static void VectorExpand(vector* v, float k) {
     VALIDATE(v);
 
-    double coef = k ? k : 2;
+    float coef = (k <= 0) ? 2 : k;
     size_t new_sz = (size_t)(v->maxSz * coef);
 
-    v->data = (uint8_t*)realloc((void*)v->data, new_sz);
+    v->data = (uint8_t*)realloc((void*)v->data, v->elemSz * new_sz);
     assert(v->data);
     v->maxSz = new_sz;
 }
@@ -72,26 +72,31 @@ void *VectorNth(const vector *v, int position)
 
 void VectorInsert(vector *v, const void *elemAddr, int position)
 {
+    // The element is passed by address!
+
+    uint8_t* pInsertTo = NULL;
+    uint8_t* pShiftTo = NULL;
+    int numElemsToShift = 0;
+
     VALIDATE(v);
-    // validate index
-    assert(position >= 0 && position <= v->sz); // allow insert to the end <==> append
     assert(elemAddr);
+    // Validate index but allow insert to the end of the vector (append)
+    assert(position >= 0 && position <= v->sz);
 
     // re-alloc if needed
     if (v->sz == v->maxSz) {
         VectorExpand(v, 0);
     }
 
-    void* pIns = v->data + v->elemSz * position;
-    int size = v->sz - position;
-    assert(size >= 0);
+    pInsertTo = v->data + v->elemSz * position;
+    numElemsToShift = v->sz - position;
 
-    if (size > 0) {
-        void* pDst = v->data + v->elemSz*(position + 1);
-        memmove(pDst, pIns, size);
+    if (numElemsToShift > 0) {
+        pShiftTo = v->data + v->elemSz*(position + 1);
+        memmove(pShiftTo, pInsertTo, numElemsToShift * v->elemSz);
     }
 
-    memcpy(pIns, elemAddr, v->elemSz);
+    memcpy(pInsertTo, elemAddr, v->elemSz);
 
     v->sz += 1;
 }
@@ -99,14 +104,13 @@ void VectorInsert(vector *v, const void *elemAddr, int position)
 void VectorAppend(vector *v, const void *elemAddr)
 {
     VALIDATE(v);
-
     VectorInsert(v, elemAddr, v->sz);
 }
 
 void VectorReplace(vector *v, const void *elemAddr, int position)
 {
     VALIDATE(v);
-    assert(position >= 0 && position < v->sz);
+    assert(position >= 0 && position <= v->sz - 1);
 
     void* pRep = v->data + v->elemSz * position;
     if (v->freeFn) {
@@ -118,20 +122,21 @@ void VectorReplace(vector *v, const void *elemAddr, int position)
 void VectorDelete(vector *v, int position)
 {
     VALIDATE(v);
-    assert(position >= 0 && position < v->sz);
+    assert(position >= 0 && position <= v->sz - 1);
+    void* pShiftTo = NULL;
+    void* pShiftFrom = NULL;
+    ssize_t numElemsToShift = 0;
 
-    void* pDel = v->data + v->elemSz * position;
-    void* pSrc = v->data + v->elemSz * (position + 1);
-    int size = v->sz - position - 1;
-    assert(size >= 0);
-
+    pShiftTo = (uint8_t*)(v->data + v->elemSz * position);
     if (v->freeFn) {
-        v->freeFn(pDel);
-    }
-    if (size > 0) {
-        memmove(pDel, pSrc, size);
+        v->freeFn(pShiftTo);
     }
 
+    numElemsToShift = v->sz - position - 1;
+    if (numElemsToShift > 0) {
+        pShiftFrom = (uint8_t*)(v->data + v->elemSz * (position + 1));
+        memmove(pShiftTo, pShiftFrom, numElemsToShift * v->elemSz);
+    }
     v->sz -= 1;
 }
 
